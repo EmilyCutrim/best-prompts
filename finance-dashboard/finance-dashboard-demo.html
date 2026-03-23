@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Personal Finance Dashboard</title>
+<style>
+:root{--bg:#0d1117;--card:#161b27;--card2:#1c2236;--card3:#222840;
+--blue:#3b82f6;--green:#22c55e;--red:#ef4444;--yellow:#f59e0b;
+--purple:#a855f7;--teal:#06b6d4;--text:#dde3f0;--muted:#5a6785;--border:#252e48}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,Arial,sans-serif;font-size:13px;line-height:1.5}
+header{background:linear-gradient(135deg,#0f2340 0%,#0d1117 60%);padding:14px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+header h1{font-size:17px;font-weight:700;color:#fff}
+header p{color:var(--muted);font-size:11px;margin-top:2px}
+.hbtns{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.hbtns button{padding:5px 13px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;letter-spacing:.3px;border:1px solid var(--border)}
+.btn-blue{background:var(--blue);border-color:var(--blue)!important;color:#fff}
+.btn-ghost{background:var(--card2);color:var(--text)}
+.btn-ghost:hover,.btn-sm:hover{opacity:.8}
+.save-ok{color:var(--green);font-size:11px;display:none}
+.tabs{display:flex;gap:1px;padding:10px 22px 0;border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tab{padding:7px 14px;border-radius:6px 6px 0 0;cursor:pointer;font-size:12px;font-weight:600;color:var(--muted);white-space:nowrap;border:1px solid transparent;border-bottom:none;transition:all .15s}
+.tab.active{background:var(--card);color:var(--blue);border-color:var(--border)}
+.tab:hover:not(.active){color:var(--text);background:var(--card2)}
+.panel{display:none;padding:16px 22px}
+.panel.active{display:block}
+.g2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:14px}
+.g3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:14px}
+.g4{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px}
+.card h3{font-size:13px;font-weight:600;margin-bottom:10px;border-bottom:1px solid var(--border);padding-bottom:7px;display:flex;align-items:center;gap:6px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px 15px}
+.kpi .lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.kpi .val{font-size:20px;font-weight:700;margin-top:3px}
+.kpi .sub{font-size:10px;color:var(--muted);margin-top:2px}
+.alert{border-left:3px solid var(--red);border-radius:6px;padding:8px 13px;margin-bottom:8px;background:#1e0a0a}
+.alert .at{font-weight:700;color:var(--red);font-size:12px}
+.alert p{color:#fca5a5;font-size:11px;margin-top:1px}
+.info{border-left:3px solid var(--green);border-radius:6px;padding:8px 13px;margin-bottom:8px;background:#091a0d}
+.info .at{font-weight:700;color:var(--green);font-size:12px}
+.info p{color:#86efac;font-size:11px;margin-top:1px}
+.warn{border-left:3px solid var(--yellow);border-radius:6px;padding:8px 13px;margin-bottom:8px;background:#1a1200}
+.warn .at{font-weight:700;color:var(--yellow);font-size:12px}
+.warn p{color:#fde68a;font-size:11px;margin-top:1px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--card2);color:var(--muted);text-transform:uppercase;font-size:10px;letter-spacing:.3px;padding:7px 10px;text-align:left;border-bottom:1px solid var(--border)}
+td{padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--card2)}
+.tscroll{overflow-x:auto}
+.badge{display:inline-block;padding:1px 7px;border-radius:9px;font-size:10px;font-weight:600}
+.bg{background:#0a2a18;color:#86efac}.br{background:#2a0a0a;color:#fca5a5}
+.by{background:#2a1800;color:#fde68a}.bb{background:#0a1a33;color:#93c5fd}
+.bm{background:#1a2030;color:#8893aa}.bp{background:#1e0a2e;color:#d8b4fe}
+.cg{color:var(--green)}.cr{color:var(--red)}.cb{color:var(--blue)}
+.cy{color:var(--yellow)}.cm{color:var(--muted)}.cp{color:var(--purple)}.ct{color:var(--teal)}
+input[type=number],input[type=text],select{background:var(--card2);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:5px 8px;font-size:12px;outline:none;width:100%}
+input[type=number]:focus,input[type=text]:focus,select:focus{border-color:var(--blue)}
+input[type=number].inline{width:110px;display:inline-block}
+.irow{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.irow label{color:var(--muted);font-size:11px;min-width:170px;flex-shrink:0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.chip{background:var(--card2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;font-size:11px;min-width:110px}
+.chip span{font-weight:700;font-size:16px;display:block;margin-top:1px}
+.modal-bg{display:none;position:fixed;inset:0;background:#0009;z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;max-width:580px;width:93%;max-height:82vh;overflow-y:auto;position:relative}
+.modal h2{font-size:14px;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.modal-x{position:absolute;top:14px;right:16px;cursor:pointer;color:var(--muted);font-size:18px;line-height:1;font-weight:300}
+.modal-x:hover{color:var(--text)}
+.acc{border:1px solid var(--border);border-radius:8px;margin-bottom:6px;overflow:hidden}
+.acc-h{padding:9px 13px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;background:var(--card2);font-size:12px;font-weight:600;transition:background .1s}
+.acc-h:hover{background:var(--card3)}
+.acc-b{display:none;padding:10px 13px;border-top:1px solid var(--border);font-size:12px}
+.acc-b.open{display:block}
+.arr{display:inline-block;transition:transform .2s;font-size:10px;color:var(--muted)}
+.arr.r{transform:rotate(90deg)}
+.ep{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:14px}
+.ep h4{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px}
+.ep-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.ep-item{display:flex;align-items:center;gap:6px}
+.ep-item label{font-size:11px;color:var(--muted);white-space:nowrap;min-width:140px}
+.ep-item input{width:110px;flex-shrink:0}
+.rbox{background:var(--card2);border:1px solid var(--border);border-radius:7px;padding:10px 13px;margin-bottom:8px}
+.rbox .rl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.rbox .rv{font-size:20px;font-weight:700;margin-top:3px}
+.loan-opt{border-radius:10px;padding:15px;margin-bottom:10px;border:2px solid transparent}
+.loan-opt.rec{border-color:var(--green);background:#071a0b}
+.loan-opt.norec{background:var(--card2)}
+.loan-opt h4{font-size:13px;font-weight:700;margin-bottom:7px}
+.pbar{background:var(--border);border-radius:4px;height:6px;overflow:hidden;margin-top:3px}
+.pbar div{height:100%;border-radius:4px}
+.stitle{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 7px;border-bottom:1px solid var(--border);padding-bottom:5px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;flex-shrink:0;vertical-align:middle}
+.pill-btn{background:var(--card2);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11px;cursor:pointer;color:var(--muted);font-weight:600;transition:all .15s}
+.pill-btn.active,.pill-btn:hover{background:var(--blue);border-color:var(--blue);color:#fff}
+.clickcard{cursor:pointer;transition:border-color .15s}
+.clickcard:hover{border-color:var(--blue)}
+.loan-banner{display:none;background:linear-gradient(135deg,#071a0b,#0d2918);border:1px solid var(--green);border-radius:10px;padding:12px 18px;margin-bottom:12px;display:none;flex-wrap:wrap;gap:14px;align-items:center}
+.loan-banner.show{display:flex}
+@media(max-width:700px){.g2,.g3,.g4{grid-template-columns:1fr}.ep-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header>
+  <div><h1>💰 Personal Finance Dashboard</h1><p id="hdr-sub">Loading…</p></div>
+  <div class="hbtns">
+    <button class="btn-blue" onclick="saveState()">💾 Save</button>
+    <button class="btn-ghost" onclick="openExportModal()">📄 Export Month</button>
+    <span class="save-ok" id="save-ok">✓ Saved!</span>
+    <div style="text-align:right;font-size:11px;color:var(--muted)" id="hdr-user"></div>
+  </div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="showTab('overview',this)">📊 Overview</div>
+  <div class="tab" onclick="showTab('projection',this)">📅 Projection</div>
+  <div class="tab" onclick="showTab('cards',this)">💳 Cards</div>
+  <div class="tab" onclick="showTab('installments',this)">📋 Installments</div>
+  <div class="tab" onclick="showTab('loan',this)">🏦 Loan</div>
+  <div class="tab" onclick="showTab('guidance',this)">💡 Guidance</div>
+</div>
+
+<!-- ══ OVERVIEW ══════════════════════════════════════════════════════ -->
+<div id="overview" class="panel active">
+  <div class="ep">
+    <h4>⚙️ Edit Panel — change any value to recalculate everything instantly</h4>
+    <div class="ep-grid" id="ep-grid"></div>
+    <div style="margin-top:11px;border-top:1px solid var(--border);padding-top:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <span style="font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.4px">💸 One-time Income (bonuses, profit share, 13th salary…)</span>
+        <button onclick="addExtraRow()" class="btn-blue" style="border:none;padding:4px 11px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600">+ Add</button>
+      </div>
+      <div id="extra-list"></div>
+    </div>
+  </div>
+
+  <div id="alerts-overview"></div>
+
+  <div class="g4" id="kpis-overview" style="margin-bottom:14px"></div>
+
+  <div id="loanb-banner" class="loan-banner">
+    <div style="font-size:13px;font-weight:700;color:var(--green)">🏦 Loan B scenario active</div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;font-size:11px" id="loanb-banner-details"></div>
+  </div>
+
+  <div class="g3">
+    <div class="card">
+      <h3>📈 Accumulated Reserve
+        <button id="btn-loanb" onclick="toggleLoanB()" class="btn-ghost" style="margin-left:auto;border:1px solid var(--border);padding:3px 10px;border-radius:5px;cursor:pointer;font-size:10px;font-weight:600;white-space:nowrap">🏦 Loan B</button>
+      </h3>
+      <canvas id="chart-reserve" height="190"></canvas>
+    </div>
+    <div class="card">
+      <h3>📉 Installments vs Income</h3>
+      <canvas id="chart-install" height="190"></canvas>
+    </div>
+    <div class="card">
+      <h3>💳 Cards — <span id="cards-chart-label">Current month</span></h3>
+      <canvas id="chart-cards" height="190"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PROJECTION ════════════════════════════════════════════════════ -->
+<div id="projection" class="panel">
+  <div class="g4" id="proj-kpis" style="margin-bottom:14px"></div>
+  <div class="card">
+    <h3>📅 Month-by-Month Projection <span id="proj-label" class="cm" style="font-size:11px;font-weight:400;margin-left:auto"></span></h3>
+    <div class="tscroll">
+      <table>
+        <thead><tr><th>Month</th><th>Income</th><th>Fixed</th><th>Installments</th><th>Variable</th><th>Extra</th><th>Balance</th><th>Reserve</th><th>Status</th></tr></thead>
+        <tbody id="tb-proj"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CARDS ═════════════════════════════════════════════════════════ -->
+<div id="cards" class="panel">
+  <div id="month-sel-cards" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px"></div>
+  <div class="chips" id="chips-cards"></div>
+  <p class="cm" style="font-size:11px;margin-bottom:12px">👆 Click a card to see all transactions for the selected month.</p>
+  <div class="g3" id="cards-grid"></div>
+</div>
+
+<!-- ══ INSTALLMENTS ══════════════════════════════════════════════════ -->
+<div id="installments" class="panel">
+  <div id="month-sel-inst" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px"></div>
+  <div class="card">
+    <h3 id="inst-title">Installments</h3>
+    <div class="tscroll">
+      <table>
+        <thead><tr><th>Description</th><th>Card</th><th>Amount/mo</th><th>Installment</th><th>Last payment</th></tr></thead>
+        <tbody id="tb-inst"></tbody>
+      </table>
+    </div>
+    <div class="chips" style="margin-top:12px">
+      <div class="chip"><span id="chip-inst" class="cr">—</span>Total installments</div>
+      <div class="chip"><span id="chip-fix" class="cr">—</span>Fixed expenses</div>
+      <div class="chip"><span id="chip-free" class="cg">—</span>Free after fixed+inst.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LOAN ══════════════════════════════════════════════════════════ -->
+<div id="loan" class="panel">
+  <div id="loan-rec-top" style="margin-bottom:14px"></div>
+  <div class="g3">
+    <div>
+      <div class="card" style="margin-bottom:12px">
+        <h3>🔢 Loan Simulator</h3>
+        <div class="irow"><label>Loan Amount</label><input type="number" id="loan-amt" value="10000" min="0" step="500" oninput="recalcLoan()"></div>
+        <div class="irow"><label>Monthly Rate (%)</label><input type="number" id="loan-rate" value="1.5" min="0.1" max="10" step="0.1" oninput="recalcLoan()"></div>
+        <div class="irow"><label>Term (months)</label><input type="number" id="loan-months" value="48" min="6" max="120" step="6" oninput="recalcLoan()"></div>
+        <div class="irow"><label>Start month</label><select id="loan-start" oninput="recalcLoan()" style="flex:1"></select></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
+          <div class="rbox"><div class="rl">Monthly payment</div><div class="rv cr" id="loan-pmt">—</div></div>
+          <div class="rbox"><div class="rl">% of income</div><div class="rv" id="loan-pct">—</div></div>
+          <div class="rbox"><div class="rl">Total cost</div><div class="rv cy" id="loan-total">—</div></div>
+          <div class="rbox"><div class="rl">Total interest</div><div class="rv cr" id="loan-interest">—</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📊 Monthly Cash Flow Impact</h3>
+        <div class="tscroll">
+          <table>
+            <thead><tr><th>Month</th><th>Balance (no loan)</th><th>Balance (with loan)</th><th>Reserve (with loan)</th></tr></thead>
+            <tbody id="tb-loan"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:12px">
+        <h3>📈 Reserve: With vs Without Loan</h3>
+        <canvas id="chart-loan" height="230"></canvas>
+      </div>
+      <div class="card">
+        <h3>⚡ Scenario Comparison</h3>
+        <div id="loan-opts"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ GUIDANCE ══════════════════════════════════════════════════════ -->
+<div id="guidance" class="panel">
+  <div class="g3">
+    <div>
+      <div id="orient-alerts" style="margin-bottom:12px"></div>
+      <div class="card">
+        <h3>📅 Monthly Payment Calendar</h3>
+        <table>
+          <thead><tr><th>Day</th><th>Event</th><th>Amount</th></tr></thead>
+          <tbody id="tb-calendar"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <h3>⚙️ Fixed Expenses — Item by Item</h3>
+      <div id="fixos-acc"></div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:4px">
+          <span>TOTAL FIXED (MONTH 1)</span><span id="tot-fix-m0" class="cr">—</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700">
+          <span>TOTAL FIXED (MONTH 2+)</span><span id="tot-fix-m1" class="cr">—</span>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>💡 Recommendations</h3>
+      <div id="recom-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODALS ════════════════════════════════════════════════════════ -->
+<div class="modal-bg" id="card-modal-bg" onclick="if(event.target===this)closeCardModal()">
+  <div class="modal">
+    <span class="modal-x" onclick="closeCardModal()">✕</span>
+    <h2 id="card-modal-title">—</h2>
+    <div id="card-modal-body"></div>
+  </div>
+</div>
+<div class="modal-bg" id="export-modal-bg" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal" style="max-width:400px">
+    <span class="modal-x" onclick="g('export-modal-bg').classList.remove('open')">✕</span>
+    <h2>📄 Export Monthly Summary</h2>
+    <div class="irow" style="margin-bottom:14px">
+      <label style="min-width:120px">Reference month</label>
+      <select id="export-month-sel" style="flex:1"></select>
+    </div>
+    <button onclick="exportMonth()" class="btn-blue" style="width:100%;border:none;padding:10px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600">📄 Generate PDF</button>
+    <p style="font-size:10px;color:var(--muted);margin-top:9px;text-align:center">Opens in new tab — use <strong>Ctrl+P → Save as PDF</strong>.</p>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+// ══════════════════════════════════════════════════════════════════
+// DATA — Replace values in USER_DATA to customize your dashboard
+// ══════════════════════════════════════════════════════════════════
+
+const USER_DATA = {
+  currency_symbol: '$',
+  start_month: '2025-04',    // YYYY-MM — first projected month
+  projection_months: 24,
+  user_label: 'Your Name',   // replace with your name
+  reference_date: '2025-04-01',
+
+  // Income sources — replace with your own
+  income: [
+    { label: 'Primary salary',   amount: 5000 },
+    { label: 'Secondary income', amount: 1500 },
+    { label: 'Food allowance',   amount: 500  },
+  ],
+
+  savings_current: 2000,   // how much you have saved right now
+  savings_goal: 10000,     // your savings target
+  variable_expenses_avg: 800,
+
+  // One-time income — bonuses, year-end salary, tax refund, etc.
+  one_time_income: [
+    { label: 'Year-end bonus', month_index: 8,  amount: 5000 },
+    { label: 'Tax refund',     month_index: 11, amount: 2000 },
+  ],
+
+  // Fixed expenses — rule: "always" | "only-N" | "N-onwards" (N = month_index, 0-based)
+  fixed_expenses: [
+    { id:'rent',   label:'Rent',             amount:1500, rule:'always'    },
+    { id:'elec',   label:'Electricity',      amount:120,  rule:'always'    },
+    { id:'net',    label:'Internet',         amount:80,   rule:'always'    },
+    { id:'water',  label:'Water',            amount:60,   rule:'always'    },
+    { id:'health', label:'Health insurance', amount:300,  rule:'always'    },
+    { id:'stream', label:'Streaming',        amount:50,   rule:'always'    },
+    { id:'gym',    label:'Gym',              amount:60,   rule:'always'    },
+    { id:'course', label:'Online course',    amount:200,  rule:'2-onwards' },
+    { id:'tax',    label:'Annual fee',       amount:400,  rule:'only-0'    },
+  ],
+
+  // Installments — total:999 = recurring forever | cur = installment # in start_month (1-based)
+  installments: [
+    { desc:'Smartphone 12x',  card:'Card A', monthly:80.00,  cur:3, total:12  },
+    { desc:'Laptop 18x',      card:'Card A', monthly:120.00, cur:1, total:18  },
+    { desc:'Furniture 10x',   card:'Card B', monthly:150.00, cur:2, total:10  },
+    { desc:'Appliance 6x',    card:'Card B', monthly:90.00,  cur:1, total:6   },
+    { desc:'Subscription',    card:'Card C', monthly:25.00,  cur:1, total:999 },
+    { desc:'Car repair 8x',   card:'Card C', monthly:110.00, cur:2, total:8   },
+  ],
+
+  // Credit cards — give each one a name and a color
+  cards: [
+    { name:'Card A', color:'#3b82f6', due_day:10, salary_day:25 },
+    { name:'Card B', color:'#22c55e', due_day:15, salary_day:25 },
+    { name:'Card C', color:'#f59e0b', due_day:20, salary_day:25 },
+  ],
+
+  // Payment calendar — key financial events each month
+  calendar_events: [
+    { day:5,  label:'Rent due',                   amount:-1500, type:'expense' },
+    { day:25, label:'Salary arrives',              amount:5000,  type:'income'  },
+    { day:26, label:'Secondary income arrives',    amount:1500,  type:'income'  },
+    { day:10, label:'Card A bill due',             amount:-1800, type:'expense' },
+    { day:15, label:'Card B bill due',             amount:-1200, type:'expense' },
+    { day:20, label:'Card C bill due',             amount:-600,  type:'expense' },
+  ],
+
+  // Loan B — optional scenario to pay off cards with a single loan
+  loan_b: {
+    amount: 8000,
+    monthly_rate: 0.015,
+    term_months: 48,
+    payoff_cards: ['Card A', 'Card B'],
+    reserve_floor: 1500,
+  },
+};
+
+// ══════════════════════════════════════════════════════════════════
+// ENGINE
+// ══════════════════════════════════════════════════════════════════
+
+const D = USER_DATA;
+const SYM = D.currency_symbol;
+const MO_LABELS = (() => {
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const [y0,m0] = D.start_month.split('-').map(Number);
+  return Array.from({length: D.projection_months}, (_,i) => {
+    const d = new Date(y0, m0-1+i, 1);
+    return months[d.getMonth()]+"/'"+String(d.getFullYear()).slice(2);
+  });
+})();
+
+const g = id => document.getElementById(id);
+const fmt = (n,dec=0) => {
+  const abs = Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec});
+  return (n<0?'-':'')+SYM+abs;
+};
+const fmtK = n => (n<0?'-':'')+SYM+Math.round(Math.abs(n)/1000)+'K';
+
+function totalIncome() {
+  return D.income.reduce((s,i) => s + (+v('inc-'+i.label.replace(/\s+/g,'-'))||0), 0);
+}
+
+function v(id) { const el=g(id); return el ? (parseFloat(el.value)||0) : 0; }
+
+function getFixed(mi) {
+  return D.fixed_expenses.reduce((s,f) => {
+    const amt = +v('fix-'+f.id) || f.amount;
+    if(f.rule==='always') return s+amt;
+    if(f.rule.startsWith('only-') && parseInt(f.rule.split('-')[1])===mi) return s+amt;
+    if(f.rule.endsWith('-onwards') && mi >= parseInt(f.rule.split('-')[0])) return s+amt;
+    return s;
+  },0);
+}
+
+function getInstallments(mi, exclude=[]) {
+  return D.installments.reduce((s,p) => {
+    if(exclude.includes(p.card)) return s;
+    if(p.total===999) return s+p.monthly;
+    return (p.cur+mi) <= p.total ? s+p.monthly : s;
+  },0);
+}
+
+function getExtra(mi) {
+  // From data
+  let total = D.one_time_income.filter(e=>e.month_index===mi).reduce((s,e)=>s+e.amount,0);
+  // From dynamic rows
+  document.querySelectorAll('.ei-row').forEach(row=>{
+    const sel=row.querySelector('.ei-month');
+    const inp=row.querySelector('.ei-val');
+    if(sel&&inp&&parseInt(sel.value)===mi) total+=(parseFloat(inp.value)||0);
+  });
+  return total;
+}
+
+function calcPMT(P,r,n){ return r===0?P/n:P*(r*Math.pow(1+r,n))/(Math.pow(1+r,n)-1); }
+
+let loanB_active = false;
+
+function buildProj(withLoanB=false) {
+  const LB = D.loan_b;
+  const lbPMT = calcPMT(LB.amount, LB.monthly_rate, LB.term_months);
+  let reserve = v('in-reserva') || D.savings_current;
+  let lbBalance = LB.amount;
+  let lbPaidMonth = -1;
+
+  return MO_LABELS.map((_,mi) => {
+    const income = totalIncome();
+    const fixed  = getFixed(mi);
+    const extra  = getExtra(mi);
+    const varExp = v('in-var') || D.variable_expenses_avg;
+
+    let inst;
+    if(withLoanB) {
+      inst = getInstallments(mi, LB.payoff_cards) + (lbBalance>0?lbPMT:0);
+    } else {
+      inst = getInstallments(mi);
+    }
+
+    const bal = income + extra - fixed - inst - varExp;
+    reserve += bal;
+
+    if(withLoanB && lbBalance>0) {
+      const surplus = reserve - LB.reserve_floor;
+      if(surplus>0) {
+        const prepay = Math.min(surplus, lbBalance);
+        lbBalance -= prepay;
+        reserve   -= prepay;
+        if(lbBalance<=0){ lbBalance=0; if(lbPaidMonth===-1) lbPaidMonth=mi; }
+      }
+    }
+
+    return { mi, label:MO_LABELS[mi], income, fixed, inst, extra, varExp, bal:Math.round(bal), reserve:Math.round(reserve) };
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CHARTS
+// ══════════════════════════════════════════════════════════════════
+
+let charts = {};
+const CHART_OPTS = {
+  responsive:true,
+  plugins:{legend:{display:false}},
+  scales:{x:{ticks:{color:'#5a6785',font:{size:9}},grid:{color:'#1c2236'}},
+          y:{ticks:{color:'#5a6785',font:{size:9},callback:v=>fmtK(v)},grid:{color:'#1c2236'}}}
+};
+
+function initCharts() {
+  Chart.defaults.color='#5a6785';
+  Chart.defaults.borderColor='#1c2236';
+  if(charts.reserve) charts.reserve.destroy();
+  if(charts.install) charts.install.destroy();
+  if(charts.cards)   charts.cards.destroy();
+
+  const proj = buildProj(false);
+  const projLB = loanB_active ? buildProj(true) : null;
+  const labels = proj.map(p=>p.label);
+
+  // Reserve chart
+  const dsReserve = [{
+    label:'Reserve',data:proj.map(p=>p.reserve),
+    borderColor:'#3b82f6',backgroundColor:'rgba(59,130,246,.08)',
+    borderWidth:2,tension:.35,fill:true,pointRadius:2
+  }];
+  if(projLB) dsReserve.push({
+    label:'Reserve w/ Loan B',data:projLB.map(p=>p.reserve),
+    borderColor:'#22c55e',borderDash:[5,4],borderWidth:2,
+    tension:.35,fill:false,pointRadius:0
+  });
+  const goalLine = {
+    label:'Goal',data:Array(labels.length).fill(D.savings_goal),
+    borderColor:'rgba(34,197,94,.4)',borderDash:[4,4],
+    borderWidth:1,pointRadius:0,fill:false
+  };
+  dsReserve.push(goalLine);
+  charts.reserve = new Chart(g('chart-reserve'),{
+    type:'line',
+    data:{labels,datasets:dsReserve},
+    options:{...CHART_OPTS,plugins:{...CHART_OPTS.plugins,legend:{display:projLB!=null,labels:{color:'#8893aa',boxWidth:12}}}}
+  });
+
+  // Installments vs income bar
+  charts.install = new Chart(g('chart-install'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Installments',data:proj.map(p=>p.inst),backgroundColor:'rgba(239,68,68,.7)',borderRadius:3},
+      {label:'Income',data:proj.map(p=>p.income),backgroundColor:'rgba(34,197,94,.15)',borderRadius:3,borderColor:'#22c55e',borderWidth:1}
+    ]},
+    options:{...CHART_OPTS,plugins:{legend:{display:true,labels:{color:'#8893aa',boxWidth:10}}}}
+  });
+
+  // Cards doughnut (current month)
+  const cardTotals = D.cards.map(c => ({
+    name:c.name, color:c.color,
+    total: D.installments.filter(i=>i.card===c.name&&(i.total===999||i.cur<=i.total)).reduce((s,i)=>s+i.monthly,0)
+  })).filter(c=>c.total>0);
+  if(charts.cards) charts.cards.destroy();
+  charts.cards = new Chart(g('chart-cards'),{
+    type:'doughnut',
+    data:{
+      labels:cardTotals.map(c=>c.name),
+      datasets:[{data:cardTotals.map(c=>c.total),backgroundColor:cardTotals.map(c=>c.color+'cc'),borderColor:cardTotals.map(c=>c.color),borderWidth:1.5}]
+    },
+    options:{responsive:true,plugins:{legend:{display:true,position:'bottom',labels:{color:'#8893aa',boxWidth:12,font:{size:10}}}}}
+  });
+  g('cards-chart-label').textContent = MO_LABELS[0];
+}
+
+// ══════════════════════════════════════════════════════════════════
+// RENDER FUNCTIONS
+// ══════════════════════════════════════════════════════════════════
+
+function renderEditPanel() {
+  const grid = g('ep-grid');
+  if(grid.innerHTML) return; // only build once
+  let html = '';
+  D.income.forEach(item=>{
+    const id='inc-'+item.label.replace(/\s+/g,'-');
+    html+=`<div class="ep-item"><label>${item.label}</label><input type="number" id="${id}" value="${item.amount}" min="0" step="100" oninput="recalc()"></div>`;
+  });
+  html+=`<div class="ep-item"><label>Current reserve (${SYM})</label><input type="number" id="in-reserva" value="${D.savings_current}" min="0" step="100" oninput="recalc()"></div>`;
+  html+=`<div class="ep-item"><label>Variable expenses/mo (${SYM})</label><input type="number" id="in-var" value="${D.variable_expenses_avg}" min="0" step="50" oninput="recalc()"></div>`;
+  html+=`<div class="ep-item"><label>Savings goal (${SYM})</label><input type="number" id="in-goal" value="${D.savings_goal}" min="0" step="500" oninput="recalc()"></div>`;
+  grid.innerHTML = html;
+}
+
+function renderAlerts() {
+  const proj = buildProj(false);
+  const income = totalIncome();
+  const inst0 = getInstallments(0);
+  const instPct = (inst0/income*100).toFixed(1);
+  let html='';
+  if(proj.some(p=>p.reserve<0)) html+=`<div class="alert"><div class="at">⚠ Reserve goes negative</div><p>Your savings will run out in one or more months. Check the Projection tab for details.</p></div>`;
+  if(inst0/income>0.3) html+=`<div class="warn"><div class="at">⚡ High installment burden</div><p>Installments represent ${instPct}% of monthly income — above the 30% safe threshold.</p></div>`;
+  const goalMonth = proj.findIndex(p=>p.reserve>=D.savings_goal);
+  if(goalMonth>-1) html+=`<div class="info"><div class="at">✓ Savings goal reachable</div><p>At current pace, you'll hit your goal around <strong>${MO_LABELS[goalMonth]}</strong>.</p></div>`;
+  else html+=`<div class="warn"><div class="at">📌 Savings goal not reached in 24 months</div><p>Consider reducing expenses or adding one-time income to accelerate savings.</p></div>`;
+  g('alerts-overview').innerHTML = html;
+  g('orient-alerts').innerHTML = html;
+}
+
+function renderKPIs() {
+  const income = totalIncome();
+  const fixed  = getFixed(0);
+  const inst   = getInstallments(0);
+  const varExp = v('in-var') || D.variable_expenses_avg;
+  const expenses = fixed+inst+varExp;
+  const surplus  = income - expenses;
+  const reserve  = v('in-reserva') || D.savings_current;
+  const goal     = v('in-goal') || D.savings_goal;
+  g('kpis-overview').innerHTML=`
+    <div class="kpi"><div class="lbl">Monthly Income</div><div class="val cg">${fmt(income)}</div><div class="sub">All sources</div></div>
+    <div class="kpi"><div class="lbl">Monthly Expenses</div><div class="val cr">${fmt(expenses)}</div><div class="sub">Fixed + inst. + variable</div></div>
+    <div class="kpi"><div class="lbl">Monthly Surplus</div><div class="val ${surplus>=0?'cg':'cr'}">${surplus>=0?'+':''}${fmt(surplus)}</div><div class="sub">${surplus>=0?'You\'re ahead':'Spending over income'}</div></div>
+    <div class="kpi"><div class="lbl">Reserve / Goal</div><div class="val cb">${fmt(reserve)}</div><div class="sub">Goal: ${fmt(goal)}</div></div>`;
+  g('hdr-sub').textContent = `${D.user_label} · ${D.reference_date}`;
+  g('hdr-user').innerHTML = `${D.user_label}<br>${D.reference_date}`;
+}
+
+function renderProjection() {
+  const proj = buildProj(false);
+  const best  = proj.reduce((a,b)=>b.bal>a.bal?b:a);
+  const worst = proj.reduce((a,b)=>b.bal<a.bal?b:a);
+  const goalM = proj.findIndex(p=>p.reserve>=(v('in-goal')||D.savings_goal));
+  g('proj-kpis').innerHTML=`
+    <div class="kpi"><div class="lbl">Months to goal</div><div class="val ${goalM>-1?'cg':'cy'}">${goalM>-1?goalM+1:'> 24'}</div><div class="sub">${goalM>-1?MO_LABELS[goalM]:'Not reached'}</div></div>
+    <div class="kpi"><div class="lbl">Best month surplus</div><div class="val cg">${fmt(best.bal)}</div><div class="sub">${best.label}</div></div>
+    <div class="kpi"><div class="lbl">Worst month balance</div><div class="val ${worst.bal>=0?'cy':'cr'}">${fmt(worst.bal)}</div><div class="sub">${worst.label}</div></div>
+    <div class="kpi"><div class="lbl">Projected gain (24mo)</div><div class="val cb">${fmt(proj[proj.length-1].reserve - (v('in-reserva')||D.savings_current))}</div><div class="sub">vs current reserve</div></div>`;
+  g('proj-label').textContent = `${MO_LABELS[0]} → ${MO_LABELS[MO_LABELS.length-1]}`;
+  const tbody = g('tb-proj');
+  tbody.innerHTML = proj.map(p=>{
+    const status = p.reserve<0?`<span class="badge br">🔴 Deficit</span>`:
+                   p.reserve<D.savings_goal?`<span class="badge by">🟡 Below goal</span>`:
+                   `<span class="badge bg">🟢 On track</span>`;
+    return `<tr>
+      <td><strong>${p.label}</strong></td>
+      <td class="cg">${fmt(p.income)}</td>
+      <td class="cr">${fmt(p.fixed)}</td>
+      <td class="cr">${fmt(p.inst)}</td>
+      <td class="cr">${fmt(p.varExp)}</td>
+      <td class="${p.extra>0?'cg':'cm'}">${p.extra?'+'+fmt(p.extra):'—'}</td>
+      <td class="${p.bal>=0?'cg':'cr'}">${p.bal>=0?'+':''}${fmt(p.bal)}</td>
+      <td class="${p.reserve<0?'cr':p.reserve<D.savings_goal?'cy':'cg'}">${fmt(p.reserve)}</td>
+      <td>${status}</td></tr>`;
+  }).join('');
+}
+
+let selCardMonth=0;
+function renderCardsTab() {
+  // Month pills
+  const msel = g('month-sel-cards');
+  if(!msel.innerHTML) {
+    msel.innerHTML = MO_LABELS.slice(0,12).map((l,i)=>
+      `<span class="pill-btn${i===0?' active':''}" onclick="selCardMonth=${i};renderCardsContent()">${l}</span>`).join('');
+  }
+  renderCardsContent();
+}
+
+function renderCardsContent() {
+  document.querySelectorAll('#month-sel-cards .pill-btn').forEach((el,i)=>el.classList.toggle('active',i===selCardMonth));
+  const mi = selCardMonth;
+  const chips = D.cards.map(c=>{
+    const tot = D.installments.filter(i=>i.card===c.name&&(i.total===999||(i.cur+mi)<=i.total)).reduce((s,i)=>s+i.monthly,0);
+    if(!tot) return '';
+    return `<div class="chip"><span style="color:${c.color}">${fmt(tot)}</span>${c.name}</div>`;
+  }).join('');
+  g('chips-cards').innerHTML=chips;
+
+  const grid = g('cards-grid');
+  grid.innerHTML='';
+  D.cards.forEach(c=>{
+    const items = D.installments.filter(i=>i.card===c.name&&(i.total===999||(i.cur+mi)<=i.total));
+    if(!items.length) return;
+    const total = items.reduce((s,i)=>s+i.monthly,0);
+    const div = document.createElement('div');
+    div.className='card clickcard';
+    div.onclick=()=>openCardModal(c,mi);
+    div.innerHTML=`<h3><span class="dot" style="background:${c.color}"></span>${c.name}<span style="margin-left:auto;font-size:12px" class="cg">${fmt(total)}</span></h3>
+      ${items.slice(0,4).map(i=>`<div style="display:flex;justify-content:space-between;font-size:11px;padding:3px 0;border-bottom:1px solid var(--border)">
+        <span class="cm">${i.desc}</span><span>${fmt(i.monthly)}</span></div>`).join('')}
+      ${items.length>4?`<p class="cm" style="font-size:10px;margin-top:5px">+${items.length-4} more items — click to expand</p>`:''}`;
+    grid.appendChild(div);
+  });
+}
+
+function openCardModal(card,mi) {
+  const items = D.installments.filter(i=>i.card===card.name&&(i.total===999||(i.cur+mi)<=i.total));
+  const total = items.reduce((s,i)=>s+i.monthly,0);
+  g('card-modal-title').innerHTML=`<span class="dot" style="background:${card.color}"></span>${card.name} — ${MO_LABELS[mi]}`;
+  g('card-modal-body').innerHTML=`
+    <table><thead><tr><th>Description</th><th>Amount</th><th>Progress</th></tr></thead>
+    <tbody>${items.map(i=>{
+      const pct = i.total===999?100:Math.round(((i.cur+mi)/i.total)*100);
+      const cur = i.cur+mi; const isR=i.total===999;
+      return `<tr><td>${i.desc}</td><td>${fmt(i.monthly)}</td>
+        <td style="min-width:120px">
+          <div style="font-size:10px;color:var(--muted)">${isR?'Recurring':cur+'/'+i.total}</div>
+          <div class="pbar"><div style="width:${pct}%;background:${pct>66?'var(--green)':pct>33?'var(--yellow)':'var(--blue)'}"></div></div>
+        </td></tr>`;
+    }).join('')}</tbody></table>
+    <div style="margin-top:12px;text-align:right;font-size:13px;font-weight:700">Total: <span class="cg">${fmt(total)}</span></div>`;
+  g('card-modal-bg').classList.add('open');
+}
+function closeCardModal(){ g('card-modal-bg').classList.remove('open'); }
+
+let selInstMonth=0;
+function renderInstallmentsTab() {
+  const msel = g('month-sel-inst');
+  if(!msel.innerHTML) {
+    msel.innerHTML = MO_LABELS.slice(0,12).map((l,i)=>
+      `<span class="pill-btn${i===0?' active':''}" onclick="selInstMonth=${i};renderInstContent()">${l}</span>`).join('');
+  }
+  renderInstContent();
+}
+
+function renderInstContent() {
+  document.querySelectorAll('#month-sel-inst .pill-btn').forEach((el,i)=>el.classList.toggle('active',i===selInstMonth));
+  const mi = selInstMonth;
+  const active = D.installments.filter(i=>i.total===999||(i.cur+mi)<=i.total);
+  const totalInst = active.reduce((s,i)=>s+i.monthly,0);
+  const totalFixed = getFixed(mi);
+  const income = totalIncome();
+  g('inst-title').textContent=`Active Installments — ${MO_LABELS[mi]}`;
+  const [y0,m0]=D.start_month.split('-').map(Number);
+  g('tb-inst').innerHTML=active.map(p=>{
+    const curMo = p.cur+mi; const isR=p.total===999;
+    const d = new Date(y0,m0-1+(p.total-p.cur),1);
+    const last = isR?'Never':['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]+"/'"+String(d.getFullYear()).slice(2);
+    const c = D.cards.find(c=>c.name===p.card);
+    return `<tr>
+      <td>${p.desc}</td>
+      <td><span class="dot" style="background:${c?c.color:'#888'}"></span>${p.card}</td>
+      <td>${fmt(p.monthly)}</td>
+      <td>${isR?'Recurring':curMo+' / '+p.total}</td>
+      <td class="cm">${last}</td></tr>`;
+  }).join('');
+  g('chip-inst').textContent=fmt(totalInst);
+  g('chip-fix').textContent=fmt(totalFixed);
+  g('chip-free').textContent=fmt(income-totalInst-totalFixed);
+}
+
+function recalcLoan() {
+  const P = v('loan-amt'); const r = v('loan-rate')/100; const n = v('loan-months');
+  const pmt = calcPMT(P,r,n);
+  const income = totalIncome();
+  g('loan-pmt').textContent=fmt(pmt);
+  g('loan-pct').textContent=(pmt/income*100).toFixed(1)+'%';
+  g('loan-total').textContent=fmt(pmt*n);
+  g('loan-interest').textContent=fmt(pmt*n-P);
+
+  const startMi = parseInt(g('loan-start').value)||0;
+  const projBase = buildProj(false);
+  const tbody = g('tb-loan');
+  tbody.innerHTML='';
+  let res=v('in-reserva')||D.savings_current;
+  projBase.forEach((p,i)=>{
+    const extra = i>=startMi && i<startMi+n ? -pmt : 0;
+    const balLoan = p.bal + extra;
+    res += balLoan;
+    tbody.innerHTML+=`<tr>
+      <td>${p.label}</td>
+      <td class="${p.bal>=0?'cg':'cr'}">${p.bal>=0?'+':''}${fmt(p.bal)}</td>
+      <td class="${balLoan>=0?'cg':'cr'}">${balLoan>=0?'+':''}${fmt(balLoan)}</td>
+      <td class="${res<0?'cr':res<D.savings_goal?'cy':'cg'}">${fmt(res)}</td></tr>`;
+  });
+
+  // Loan chart
+  if(charts.loanChart) charts.loanChart.destroy();
+  let resB=v('in-reserva')||D.savings_current, resL=resB;
+  const baseData=[], loanData=[];
+  projBase.forEach((p,i)=>{
+    resB+=p.bal; baseData.push(resB);
+    const extra = i>=startMi && i<startMi+n ? -pmt : 0;
+    resL+=p.bal+extra; loanData.push(Math.round(resL));
+  });
+  charts.loanChart = new Chart(g('chart-loan'),{
+    type:'line',
+    data:{labels:projBase.map(p=>p.label),datasets:[
+      {label:'Without loan',data:baseData,borderColor:'#3b82f6',borderWidth:2,tension:.35,fill:false,pointRadius:0},
+      {label:'With loan',data:loanData,borderColor:'#a855f7',borderWidth:2,tension:.35,fill:false,pointRadius:0,borderDash:[5,4]}
+    ]},
+    options:{...CHART_OPTS,plugins:{legend:{display:true,labels:{color:'#8893aa',boxWidth:12}}}}
+  });
+
+  // Comparison options
+  const opts=[[n,r],[Math.round(n*0.75),r],[n,r*0.8]].map(([term,rate],i)=>{
+    const pm=calcPMT(P,rate,term), tot=pm*term, interest=tot-P;
+    const ok = (pm/income)<0.35;
+    return `<div class="loan-opt ${i===0?'rec':'norec'}">
+      <h4>${i===0?'✅ Your current simulation':'📊 Alternative '+i}</h4>
+      <div style="font-size:12px;display:flex;flex-wrap:wrap;gap:10px">
+        <span>Rate: <strong>${(rate*100).toFixed(1)}%</strong></span>
+        <span>Term: <strong>${term}mo</strong></span>
+        <span>PMT: <strong class="${ok?'cg':'cr'}">${fmt(pm)}</strong></span>
+        <span>Total cost: <strong class="cy">${fmt(tot)}</strong></span>
+        <span>Interest: <strong class="cr">${fmt(interest)}</strong></span>
+      </div></div>`;
+  });
+  g('loan-opts').innerHTML=opts.join('');
+  g('loan-rec-top').innerHTML=`<div class="info"><div class="at">ℹ Loan analysis</div><p>With the current simulation, monthly payment is <strong>${fmt(pmt)}</strong> (${(pmt/income*100).toFixed(1)}% of income). ${pmt/income<0.35?'This is within safe limits (< 30%).':'This exceeds the recommended 30% threshold.'}</p></div>`;
+}
+
+function toggleLoanB() {
+  loanB_active = !loanB_active;
+  const btn = g('btn-loanb');
+  btn.style.color = loanB_active ? 'var(--green)' : '';
+  btn.style.borderColor = loanB_active ? 'var(--green)' : '';
+  const banner = g('loanb-banner');
+  if(loanB_active) {
+    banner.classList.add('show');
+    const LB=D.loan_b; const pmt=calcPMT(LB.amount,LB.monthly_rate,LB.term_months);
+    const projLB=buildProj(true); const paidMo=projLB.findIndex((_,i)=>{
+      let bal=LB.amount;
+      for(let j=0;j<=i;j++){const surplus=projLB[j].reserve-LB.reserve_floor;if(surplus>0)bal-=Math.min(surplus,bal);}
+      return bal<=0;
+    });
+    g('loanb-banner-details').innerHTML=`
+      <span>Amount: <strong class="cg">${fmt(LB.amount)}</strong></span>
+      <span>Rate: <strong class="cg">${(LB.monthly_rate*100)}%/mo × ${LB.term_months}mo</strong></span>
+      <span>PMT: <strong class="cy">${fmt(pmt)}/mo</strong></span>
+      <span>Projected payoff: <strong class="cg">${paidMo>-1?MO_LABELS[paidMo]:'> 24mo'}</strong></span>
+      <span>Cards replaced: <strong class="cg">${LB.payoff_cards.join(', ')}</strong></span>`;
+  } else { banner.classList.remove('show'); }
+  initCharts();
+}
+
+function renderGuidance() {
+  // Calendar
+  const cal = D.calendar_events.sort((a,b)=>a.day-b.day);
+  g('tb-calendar').innerHTML=cal.map(ev=>{
+    const cls=ev.type==='income'?'bg':'br';
+    const amtCls=ev.type==='income'?'cg':'cr';
+    const warn = ev.type==='expense' && ev.day < (D.cards[0]?.salary_day||25);
+    return `<tr>
+      <td><span class="badge ${cls}">${ev.day}</span>${warn?'<span class="cy" style="font-size:10px;margin-left:4px">⚠ Before salary</span>':''}</td>
+      <td>${ev.label}</td>
+      <td class="${amtCls}">${ev.amount>0?'+':''}${fmt(ev.amount)}</td></tr>`;
+  }).join('');
+
+  // Fixed accordion
+  const acc = g('fixos-acc');
+  acc.innerHTML='';
+  D.fixed_expenses.forEach(f=>{
+    const div=document.createElement('div'); div.className='acc';
+    div.innerHTML=`<div class="acc-h" onclick="this.nextElementSibling.classList.toggle('open');this.querySelector('.arr').classList.toggle('r')">
+      <span>${f.label} <span class="cm" style="font-size:10px;font-weight:400">(${f.rule})</span></span>
+      <span style="display:flex;align-items:center;gap:10px">
+        <span class="cr" id="acc-val-${f.id}">${fmt(f.amount)}</span>
+        <span class="arr">▶</span>
+      </span></div>
+      <div class="acc-b">
+        <div class="irow">
+          <label>Amount (${SYM})</label>
+          <input type="number" id="fix-${f.id}" value="${f.amount}" min="0" step="10"
+            oninput="g('acc-val-${f.id}').textContent=this.value?'${SYM}'+parseFloat(this.value).toFixed(0):'${SYM}0';recalc()">
+        </div>
+        <p class="cm" style="font-size:10px">Rule: <strong>${f.rule}</strong></p>
+      </div>`;
+    acc.appendChild(div);
+  });
+  g('tot-fix-m0').textContent=fmt(getFixed(0));
+  g('tot-fix-m1').textContent=fmt(getFixed(1));
+
+  // Recommendations
+  const proj=buildProj(false);
+  const income=totalIncome();
+  const inst0=getInstallments(0);
+  const recs=[];
+  if(inst0/income>0.3) recs.push(`⚠ Installments represent <strong>${(inst0/income*100).toFixed(0)}%</strong> of monthly income — above the 30% safe threshold. Consider consolidating debt.`);
+  const goalMo=proj.findIndex(p=>p.reserve>=(v('in-goal')||D.savings_goal));
+  if(goalMo>-1) recs.push(`✅ Reserve goal reachable in <strong>${goalMo+1} months</strong> (around ${MO_LABELS[goalMo]}).`);
+  else recs.push('📌 Reserve goal not reachable within 24 months at current pace.');
+  const lbPMT=calcPMT(D.loan_b.amount,D.loan_b.monthly_rate,D.loan_b.term_months);
+  recs.push(`💡 Loan B scenario: borrowing <strong>${fmt(D.loan_b.amount)}</strong> at ${(D.loan_b.monthly_rate*100)}%/mo would replace ${D.loan_b.payoff_cards.join('+')} card installments with a single <strong>${fmt(lbPMT)}/mo</strong> payment.`);
+  const negMonths=proj.filter(p=>p.reserve<0).length;
+  if(negMonths>0) recs.push(`🔴 Reserve goes negative in <strong>${negMonths} month(s)</strong>. Review spending or add one-time income entries.`);
+  g('recom-list').innerHTML=recs.map(r=>`<div style="font-size:12px;padding:8px 0;border-bottom:1px solid var(--border)">${r}</div>`).join('');
+}
+
+function addExtraRow() {
+  const list=g('extra-list');
+  const row=document.createElement('div'); row.className='ei-row';
+  row.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:6px;flex-wrap:wrap';
+  const opts=MO_LABELS.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+  row.innerHTML=`
+    <input type="text" class="ei-label" placeholder="Description (bonus, 13th…)" oninput="recalc()" style="flex:1;min-width:130px">
+    <select class="ei-month" onchange="recalc()" style="width:85px">${opts}</select>
+    <input type="number" class="ei-val" value="0" min="0" step="100" placeholder="${SYM}" oninput="recalc()" style="width:100px">
+    <button onclick="this.closest('.ei-row').remove();recalc()" style="background:var(--card3);border:1px solid var(--border);color:var(--muted);width:26px;height:26px;border-radius:5px;cursor:pointer;font-size:14px;flex-shrink:0">✕</button>`;
+  list.appendChild(row);
+  row.querySelector('.ei-label').focus();
+}
+
+function showTab(id,el) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  g(id).classList.add('active');
+  el.classList.add('active');
+  if(id==='cards') renderCardsTab();
+  if(id==='installments') renderInstallmentsTab();
+  if(id==='loan') recalcLoan();
+  if(id==='guidance') renderGuidance();
+}
+
+function saveState() {
+  const data={};
+  document.querySelectorAll('[id^=inc-],[id^=fix-],#in-reserva,#in-var,#in-goal').forEach(el=>{ if(el.value) data[el.id]=el.value; });
+  navigator.clipboard.writeText(JSON.stringify(data)).catch(()=>{});
+  const ok=g('save-ok'); ok.style.display='inline'; setTimeout(()=>ok.style.display='none',2000);
+}
+
+function openExportModal() {
+  const sel=g('export-month-sel');
+  sel.innerHTML=MO_LABELS.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+  g('export-modal-bg').classList.add('open');
+}
+
+function exportMonth() {
+  const mi=parseInt(g('export-month-sel').value)||0;
+  const income=totalIncome();
+  const fixed=getFixed(mi);
+  const inst=getInstallments(mi);
+  const varExp=v('in-var')||D.variable_expenses_avg;
+  const extra=getExtra(mi);
+  const bal=income+extra-fixed-inst-varExp;
+  const w=window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Finance Report — ${MO_LABELS[mi]}</title>
+  <style>body{font-family:Arial,sans-serif;margin:40px;color:#111;font-size:13px}
+  h1{font-size:18px;margin-bottom:4px}h2{font-size:14px;margin:20px 0 8px;border-bottom:1px solid #ccc;padding-bottom:4px}
+  table{width:100%;border-collapse:collapse;margin-bottom:12px}
+  th{background:#f0f0f0;padding:6px 10px;text-align:left;font-size:11px}
+  td{padding:6px 10px;border-bottom:1px solid #eee}
+  .total{font-weight:700;font-size:14px}.red{color:#dc2626}.green{color:#16a34a}
+  @media print{body{margin:20px}}</style></head><body>
+  <h1>💰 Financial Report — ${MO_LABELS[mi]}</h1>
+  <p style="color:#666;font-size:11px">${D.user_label} · Generated on ${new Date().toLocaleDateString()}</p>
+  <h2>Income</h2><table><thead><tr><th>Source</th><th>Amount</th></tr></thead>
+  <tbody>${D.income.map(i=>`<tr><td>${i.label}</td><td class="green">${fmt(i.amount)}</td></tr>`).join('')}
+  ${extra?`<tr><td>Extra income (${MO_LABELS[mi]})</td><td class="green">+${fmt(extra)}</td></tr>`:''}
+  <tr class="total"><td>TOTAL</td><td class="green">${fmt(income+extra)}</td></tr></tbody></table>
+  <h2>Fixed Expenses</h2><table><thead><tr><th>Expense</th><th>Amount</th></tr></thead>
+  <tbody>${D.fixed_expenses.filter(f=>ruleActiveExport(f.rule,mi)).map(f=>`<tr><td>${f.label}</td><td class="red">${fmt(f.amount)}</td></tr>`).join('')}
+  <tr class="total"><td>TOTAL</td><td class="red">${fmt(fixed)}</td></tr></tbody></table>
+  <h2>Installments</h2><table><thead><tr><th>Description</th><th>Card</th><th>Amount</th></tr></thead>
+  <tbody>${D.installments.filter(p=>p.total===999||(p.cur+mi)<=p.total).map(p=>`<tr><td>${p.desc}</td><td>${p.card}</td><td class="red">${fmt(p.monthly)}</td></tr>`).join('')}
+  <tr class="total"><td colspan="2">TOTAL</td><td class="red">${fmt(inst)}</td></tr></tbody></table>
+  <h2>Summary</h2><table><tbody>
+  <tr><td>Total income</td><td class="green">${fmt(income+extra)}</td></tr>
+  <tr><td>Fixed + installments + variable</td><td class="red">${fmt(fixed+inst+varExp)}</td></tr>
+  <tr class="total"><td>Monthly balance</td><td class="${bal>=0?'green':'red'}">${bal>=0?'+':''}${fmt(bal)}</td></tr>
+  </tbody></table>
+  <p style="font-size:10px;color:#999;margin-top:20px">Print this page (Ctrl+P) and save as PDF.</p>
+  </body></html>`);
+  w.document.close();
+  g('export-modal-bg').classList.remove('open');
+}
+
+function ruleActiveExport(rule,mi) {
+  if(rule==='always') return true;
+  if(rule.startsWith('only-')) return parseInt(rule.split('-')[1])===mi;
+  if(rule.endsWith('-onwards')) return mi>=parseInt(rule.split('-')[0]);
+  return false;
+}
+
+function initLoanStartOptions() {
+  const sel=g('loan-start');
+  sel.innerHTML=MO_LABELS.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+}
+
+function recalc() {
+  renderAlerts();
+  renderKPIs();
+  renderProjection();
+  initCharts();
+  g('tot-fix-m0') && (g('tot-fix-m0').textContent=fmt(getFixed(0)));
+  g('tot-fix-m1') && (g('tot-fix-m1').textContent=fmt(getFixed(1)));
+}
+
+function init() {
+  renderEditPanel();
+  initLoanStartOptions();
+  recalc();
+}
+
+init();
+</script>
+</body>
+</html>
